@@ -22,6 +22,7 @@ RUN mkdir -p storage/tmp \
 
 # Set TMPDIR for PHP/Laravel
 ENV TMPDIR=/var/www/html/storage/tmp
+RUN echo "upload_tmp_dir=/var/www/html/storage/tmp" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
