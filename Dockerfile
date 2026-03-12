@@ -1,37 +1,36 @@
-# Use official PHP 8.3 with Apache (simpler for static files)
+# Use official PHP 8.3 with Apache
 FROM php:8.3-apache
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install PHP extensions Laravel needs (no database)
+# Install PHP extensions needed by Laravel (no DB)
 RUN apt-get update && apt-get install -y \
     libzip-dev unzip git curl \
-    && docker-php-ext-install zip
+    && docker-php-ext-install zip \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy composer and install dependencies
-COPY composer.json composer.lock ./
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install --no-dev --optimize-autoloader
-
-# Copy full app
-COPY . .
-
-# Ensure permissions for storage & bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
-
-# Enable Apache mod_rewrite for clean URLs
+# Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Ensure Apache serves public folder
+# Copy the full Laravel app into the container
+COPY . .
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Fix permissions for Laravel storage & bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache public
+
+# Set Apache document root to public folder
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# If using PHP built-in server (optional, simpler)
-# CMD ["php", "-S", "0.0.0.0:10000", "-t", "public"]
-
-# Expose port 10000 for Render
+# Expose port for Render
 EXPOSE 10000
 
 # Start Apache in foreground
