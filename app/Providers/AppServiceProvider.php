@@ -21,5 +21,9 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         putenv('TMPDIR=' . storage_path('tmp'));
+
+        if (app()->environment('production')) {
+        URL::forceScheme('https');
+    }
     }
 }
