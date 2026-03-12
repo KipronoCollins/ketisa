@@ -26,14 +26,5 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production')) {
         URL::forceScheme('https');
     }
-
-    // Force PHP temporary files into storage/tmp
-        $tmp = storage_path('tmp');
-        if (!file_exists($tmp)) {
-            mkdir($tmp, 0775, true);
-        }
-
-        putenv('TMPDIR=' . $tmp);
-        ini_set('upload_tmp_dir', $tmp);
     }
 }

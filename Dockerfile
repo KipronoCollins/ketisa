@@ -16,13 +16,11 @@ RUN a2enmod rewrite
 # Copy full Laravel app
 COPY . .
 
-# Create storage/tmp for temp files
+# Create storage/tmp and force PHP to use it globally
 RUN mkdir -p storage/tmp \
-    && chmod -R 775 storage bootstrap/cache storage/tmp public
-
-# Set TMPDIR for PHP/Laravel
-ENV TMPDIR=/var/www/html/storage/tmp
-RUN echo "upload_tmp_dir=/var/www/html/storage/tmp" >> /usr/local/etc/php/conf.d/uploads.ini
+    && chmod -R 777 storage/tmp storage bootstrap/cache public \
+    && echo "sys_temp_dir=/var/www/html/storage/tmp" >> /usr/local/etc/php/conf.d/tmpdir.ini \
+    && echo "upload_tmp_dir=/var/www/html/storage/tmp" >> /usr/local/etc/php/conf.d/tmpdir.ini
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
