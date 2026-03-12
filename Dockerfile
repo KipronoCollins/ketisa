@@ -1,4 +1,4 @@
-# Use PHP 8.3 with Apache
+# PHP 8.3 with Apache
 FROM php:8.3-apache
 
 # Set working directory
@@ -13,28 +13,28 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Copy the full Laravel app into the container
+# Copy full Laravel app
 COPY . .
+
+# Create storage/tmp for temp files
+RUN mkdir -p storage/tmp \
+    && chmod -R 775 storage bootstrap/cache storage/tmp public
+
+# Set TMPDIR for PHP/Laravel
+ENV TMPDIR=/var/www/html/storage/tmp
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Create storage/tmp for temp files
-RUN mkdir -p storage/tmp \
-    && chmod -R 777 storage storage/tmp bootstrap/cache public
-
-# Set TMPDIR for PHP & Laravel
-ENV TMPDIR=/var/www/html/storage/tmp
-
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set Apache document root to public folder
+# Set Apache document root to public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Expose port for Render
+# Expose Render web port
 EXPOSE 10000
 
 # Start Apache in foreground
